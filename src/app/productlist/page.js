@@ -10,6 +10,22 @@ export default function FlightSearchPage() {
   const [departureDate, setDepartureDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [flightResults, setFlightResults] = useState([]);
+  const [selectedAirlines, setSelectedAirlines] = useState([]);
+  const [fareTypes, setFareTypes] = useState({
+  refundable: false,
+  nonRefundable: false,
+});
+const [stopsFilter, setStopsFilter] = useState({
+  nonstop: false,
+  oneStop: false,
+  twoPlusStops: false,
+});
+const [priceRange, setPriceRange] = useState([0, 100000]); // Default min-max
+const [priceLimits, setPriceLimits] = useState([0, 100000]); // Actual limits from data
+
+
+
+
 
   const fetchSuggestions = async (query, setSuggestions) => {
     if (query.length < 2) return;
@@ -37,6 +53,7 @@ export default function FlightSearchPage() {
     }
     setLoading(false);
   };
+  
 
   useEffect(() => {
     const delay = setTimeout(() => fetchSuggestions(fromQuery, setFromSuggestions), 300);
@@ -63,7 +80,7 @@ export default function FlightSearchPage() {
   const origin = extractIATA(fromQuery);
   const destination = extractIATA(toQuery);
   const dateTime = `${departureDate}T00:00:00`;
-
+  
   const requestBody = {
     AdultCount: "1",
     ChildCount: "0",
@@ -97,12 +114,28 @@ setLoading(true)
     const results = data.Results?.[0] || []; // First group of results
     const allOptions = results.flatMap((result) => result.FareDataMultiple || []);
     setFlightResults(allOptions);
+    if (allOptions.length > 0) {
+  const prices = allOptions.map((f) => f.Fare.OfferedFare);
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+
+  setPriceLimits([minPrice, maxPrice]);
+  setPriceRange([minPrice, maxPrice]);
+}
   } catch (error) {
     console.error("Flight Search error:", error);
     alert("Something went wrong. Please try again.");
   }
   setLoading(false);
 };
+const getUniqueAirlines = () => {
+  const names = flightResults.map(f => f.FareSegments[0]?.AirlineName || "Unknown");
+  return Array.from(new Set(names));
+};
+
+
+
+
 
   return (
     <div style={{ padding: "2rem", maxWidth: "500px", margin: "auto" }}>
@@ -186,7 +219,108 @@ setLoading(true)
       >
         Search Flights
       </button>
+      {flightResults.length > 0 && (
+  <>
+    <h3>Filters</h3>
+    <div style={{ marginBottom: "1rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+      {getUniqueAirlines().map((airline) => (
+        <label key={airline} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <input
+            type="checkbox"
+            checked={selectedAirlines.includes(airline)}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setSelectedAirlines(prev =>
+                checked ? [...prev, airline] : prev.filter(a => a !== airline)
+              );
+            }}
+          />
+          {airline}
+        </label>
+      ))}
+    </div>
+    <h4>Fare Type</h4>
+<div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+    <input
+      type="checkbox"
+      checked={fareTypes.refundable}
+      onChange={(e) =>
+        setFareTypes((prev) => ({ ...prev, refundable: e.target.checked }))
+      }
+    />
+    Refundable
+  </label>
+  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+    <input
+      type="checkbox"
+      checked={fareTypes.nonRefundable}
+      onChange={(e) =>
+        setFareTypes((prev) => ({ ...prev, nonRefundable: e.target.checked }))
+      }
+    />
+    Non-Refundable
+  </label>
+</div>
+<h4>Stops</h4>
+<div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+    <input
+      type="checkbox"
+      checked={stopsFilter.nonstop}
+      onChange={(e) =>
+        setStopsFilter((prev) => ({ ...prev, nonstop: e.target.checked }))
+      }
+    />
+    Non-stop
+  </label>
+  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+    <input
+      type="checkbox"
+      checked={stopsFilter.oneStop}
+      onChange={(e) =>
+        setStopsFilter((prev) => ({ ...prev, oneStop: e.target.checked }))
+      }
+    />
+    1 Stop
+  </label>
+  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+    <input
+      type="checkbox"
+      checked={stopsFilter.twoPlusStops}
+      onChange={(e) =>
+        setStopsFilter((prev) => ({ ...prev, twoPlusStops: e.target.checked }))
+      }
+    />
+    2+ Stops
+  </label>
+</div>
+<h4>Price Range: ₹{priceRange[0]} - ₹{priceRange[1]}</h4>
+<div style={{ display: "flex", flexDirection: "column", gap: "1rem", width: "300px" }}>
+  <input
+    type="range"
+    min={priceLimits[0]}
+    max={priceLimits[1]}
+    value={priceRange[0]}
+    onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
+  />
+  <input
+    type="range"
+    min={priceLimits[0]}
+    max={priceLimits[1]}
+    value={priceRange[1]}
+    onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+  />
+</div>
+
+
+
+  </>
+)}
+
      {flightResults.length > 0 && (
+
+
   <div style={{ marginTop: "2rem" }}>
     <h3>Available Flights</h3>
      <div
@@ -197,7 +331,46 @@ setLoading(true)
         paddingBottom: "1rem",
       }}
     >
-      {flightResults.map((flight, index) => {
+    {flightResults
+  .filter((flight) => {
+  const airlineName = flight.FareSegments[0]?.AirlineName;
+  const isRefundable = flight.IsRefundable;
+  const segmentCount = flight.FareSegments.length;
+  const price = flight.Fare.OfferedFare;
+const priceMatch = price >= priceRange[0] && price <= priceRange[1];
+
+
+  // Airline Filter
+  const airlineMatch =
+    selectedAirlines.length === 0 || selectedAirlines.includes(airlineName);
+
+  // Fare Type Filter
+  const refundableMatch =
+    (!fareTypes.refundable && !fareTypes.nonRefundable) ||
+    (fareTypes.refundable && isRefundable) ||
+    (fareTypes.nonRefundable && !isRefundable);
+
+  // Stops Filter
+  const stopsSelected =
+    stopsFilter.nonstop || stopsFilter.oneStop || stopsFilter.twoPlusStops;
+    
+
+  let stopsMatch = true; // show all if nothing is selected
+  if (stopsSelected) {
+    stopsMatch =
+      (stopsFilter.nonstop && segmentCount === 1) ||
+      (stopsFilter.oneStop && segmentCount === 2) ||
+      (stopsFilter.twoPlusStops && segmentCount >= 3);
+  }
+
+  //return airlineMatch && refundableMatch && stopsMatch;
+  return airlineMatch && refundableMatch && stopsMatch && priceMatch;
+
+})
+
+  .map((flight, index) => {
+
+
         const segment = flight.FareSegments[0];
         const fare = flight.Fare;
 
