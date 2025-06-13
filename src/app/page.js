@@ -1,29 +1,38 @@
-"use client"
-import Link from 'next/link'
-import styles from './page.module.css'
-import {useRouter} from 'next/navigation'
-
+"use client";
+import { useRouter } from "next/navigation";
+import styles from "./page.module.css";
 
 export default function Home() {
   const router = useRouter();
-  const navigate=(name)=>{
-    router.push(name)
-  }
+
+  const navigateToBooking = () => {
+    router.push("/productlist");
+  };
+
   return (
-    <main>
-     <h1>Dynamic Routing</h1> 
-     <Link href="/login" >Go to Login Page</Link>
-     <br />
-     <br />
-     <Link href="/about" >Go to About Page</Link>
-     <br />
-     <br />
-     <button onClick={()=>navigate("/login")} >Go to Login Page</button>
-     <button onClick={()=>navigate("/about")} >Go to About Page</button>
+    <div className={styles.landing}>
+      <div className={styles.overlay}>
+        <h1 className={styles.title}>✈️ Raj's First Next.js Project</h1>
+        <p className={styles.subtitle}>Book flights instantly — Fast. Easy. Affordable.</p>
+        <button className={styles.button} onClick={navigateToBooking}>
+          Start Flight Booking
+        </button>
 
-
-    </main>
-  )
+        <div className={styles.features}>
+          <div className={styles.card}>
+            <h3>🔎 Search Flights</h3>
+            <p>Find the best flight deals in seconds.</p>
+          </div>
+          <div className={styles.card}>
+            <h3>💸 View Offers</h3>
+            <p>Get access to exclusive discounts and promo codes.</p>
+          </div>
+          <div className={styles.card}>
+            <h3>📞 24x7 Support</h3>
+            <p>We’re always here to help, day or night.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
-
-
