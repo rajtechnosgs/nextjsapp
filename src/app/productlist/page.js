@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 import './productstyle.css'
 export default function FlightSearchPage() {
   const [fromQuery, setFromQuery] = useState("");
@@ -12,6 +13,7 @@ export default function FlightSearchPage() {
   const [flightResults, setFlightResults] = useState([]);
   const [selectedAirlines, setSelectedAirlines] = useState([]);
   const [showModifySearch, setShowModifySearch] = useState(false);
+  const [traceId, setTraceId] = useState("");
   const [fareTypes, setFareTypes] = useState({
   refundable: false,
   nonRefundable: false,
@@ -43,6 +45,7 @@ const [priceLimits, setPriceLimits] = useState([0, 100000]); // Actual limits fr
       });
 
       const data = await res.json();
+
       if (data.Results) {
         setSuggestions(data.Results);
       } else {
@@ -112,6 +115,7 @@ setLoading(true)
     });
 
     const data = await res.json();
+    setTraceId(data.TraceId);
     const results = data.Results?.[0] || []; // First group of results
     const allOptions = results.flatMap((result) => result.FareDataMultiple || []);
     setFlightResults(allOptions);
@@ -133,6 +137,9 @@ const getUniqueAirlines = () => {
   const names = flightResults.map(f => f.FareSegments[0]?.AirlineName || "Unknown");
   return Array.from(new Set(names));
 };
+
+const router = useRouter();
+
 
 
 
@@ -220,105 +227,8 @@ const getUniqueAirlines = () => {
       >
         Search Flights
       </button>
-      {flightResults.length > 0 && (
-  <>
-    <h3>Filters</h3>
-    <div style={{ marginBottom: "1rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-      {getUniqueAirlines().map((airline) => (
-        <label key={airline} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <input
-            type="checkbox"
-            checked={selectedAirlines.includes(airline)}
-            onChange={(e) => {
-              const checked = e.target.checked;
-              setSelectedAirlines(prev =>
-                checked ? [...prev, airline] : prev.filter(a => a !== airline)
-              );
-            }}
-          />
-          {airline}
-        </label>
-      ))}
-    </div>
-    <h4>Fare Type</h4>
-<div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
-  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-    <input
-      type="checkbox"
-      checked={fareTypes.refundable}
-      onChange={(e) =>
-        setFareTypes((prev) => ({ ...prev, refundable: e.target.checked }))
-      }
-    />
-    Refundable
-  </label>
-  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-    <input
-      type="checkbox"
-      checked={fareTypes.nonRefundable}
-      onChange={(e) =>
-        setFareTypes((prev) => ({ ...prev, nonRefundable: e.target.checked }))
-      }
-    />
-    Non-Refundable
-  </label>
-</div>
-<h4>Stops</h4>
-<div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
-  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-    <input
-      type="checkbox"
-      checked={stopsFilter.nonstop}
-      onChange={(e) =>
-        setStopsFilter((prev) => ({ ...prev, nonstop: e.target.checked }))
-      }
-    />
-    Non-stop
-  </label>
-  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-    <input
-      type="checkbox"
-      checked={stopsFilter.oneStop}
-      onChange={(e) =>
-        setStopsFilter((prev) => ({ ...prev, oneStop: e.target.checked }))
-      }
-    />
-    1 Stop
-  </label>
-  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-    <input
-      type="checkbox"
-      checked={stopsFilter.twoPlusStops}
-      onChange={(e) =>
-        setStopsFilter((prev) => ({ ...prev, twoPlusStops: e.target.checked }))
-      }
-    />
-    2+ Stops
-  </label>
-</div>
-<h4>Price Range: ₹{priceRange[0]} - ₹{priceRange[1]}</h4>
-<div style={{ display: "flex", flexDirection: "column", gap: "1rem", width: "300px" }}>
-  <input
-    type="range"
-    min={priceLimits[0]}
-    max={priceLimits[1]}
-    value={priceRange[0]}
-    onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
-  />
-  <input
-    type="range"
-    min={priceLimits[0]}
-    max={priceLimits[1]}
-    value={priceRange[1]}
-    onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-  />
-</div>
 
-
-
-  </>
-)}
-<button
+      <button
   onClick={() => setShowModifySearch(true)}
   style={{
     padding: "0.5rem 1rem",
@@ -332,7 +242,9 @@ const getUniqueAirlines = () => {
 >
   Modify Search
 </button>
-{showModifySearch && (
+
+
+      {showModifySearch && (
   <div style={{
     position: "fixed",
     top: 0, left: 0, right: 0, bottom: 0,
@@ -455,6 +367,104 @@ const getUniqueAirlines = () => {
   </div>
 )}
 
+      {flightResults.length > 0 && (
+  <>
+    <h3>Filters</h3>
+    <div style={{ marginBottom: "1rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+      {getUniqueAirlines().map((airline) => (
+        <label key={airline} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <input
+            type="checkbox"
+            checked={selectedAirlines.includes(airline)}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setSelectedAirlines(prev =>
+                checked ? [...prev, airline] : prev.filter(a => a !== airline)
+              );
+            }}
+          />
+          {airline}
+        </label>
+      ))}
+    </div>
+    <h4>Fare Type</h4>
+<div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+    <input
+      type="checkbox"
+      checked={fareTypes.refundable}
+      onChange={(e) =>
+        setFareTypes((prev) => ({ ...prev, refundable: e.target.checked }))
+      }
+    />
+    Refundable
+  </label>
+  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+    <input
+      type="checkbox"
+      checked={fareTypes.nonRefundable}
+      onChange={(e) =>
+        setFareTypes((prev) => ({ ...prev, nonRefundable: e.target.checked }))
+      }
+    />
+    Non-Refundable
+  </label>
+</div>
+<h4>Stops</h4>
+<div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+    <input
+      type="checkbox"
+      checked={stopsFilter.nonstop}
+      onChange={(e) =>
+        setStopsFilter((prev) => ({ ...prev, nonstop: e.target.checked }))
+      }
+    />
+    Non-stop
+  </label>
+  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+    <input
+      type="checkbox"
+      checked={stopsFilter.oneStop}
+      onChange={(e) =>
+        setStopsFilter((prev) => ({ ...prev, oneStop: e.target.checked }))
+      }
+    />
+    1 Stop
+  </label>
+  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+    <input
+      type="checkbox"
+      checked={stopsFilter.twoPlusStops}
+      onChange={(e) =>
+        setStopsFilter((prev) => ({ ...prev, twoPlusStops: e.target.checked }))
+      }
+    />
+    2+ Stops
+  </label>
+</div>
+<h4>Price Range: ₹{priceRange[0]} - ₹{priceRange[1]}</h4>
+<div style={{ display: "flex", flexDirection: "column", gap: "1rem", width: "300px" }}>
+  <input
+    type="range"
+    min={priceLimits[0]}
+    max={priceLimits[1]}
+    value={priceRange[0]}
+    onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
+  />
+  <input
+    type="range"
+    min={priceLimits[0]}
+    max={priceLimits[1]}
+    value={priceRange[1]}
+    onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+  />
+</div>
+
+
+
+  </>
+)}
 
      {flightResults.length > 0 && (
 
@@ -508,7 +518,7 @@ const priceMatch = price >= priceRange[0] && price <= priceRange[1];
 
   .map((flight, index) => {
 
-
+   console.log(flight);
         const segment = flight.FareSegments[0];
         const fare = flight.Fare;
 
@@ -536,6 +546,25 @@ const priceMatch = price >= priceRange[0] && price <= priceRange[1];
             <p>Cabin: {segment.CabinBaggage}</p>
             <p>Class: {segment.CabinClassName} ({segment.FareClass})</p>
             <p>Fare: ₹{fare.OfferedFare} ({flight.Source} Fare)</p>
+            <button
+  onClick={() =>
+    router.push(
+      `/productlist/${flight.ResultIndex}?traceId=${traceId}&srdvIndex=${flight.SrdvIndex}`
+    )
+  }
+  style={{
+    marginTop: "10px",
+    padding: "8px 16px",
+    backgroundColor: "#0070f3",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  }}
+>
+  Book
+</button>
+
           </div>
         );
       })}
