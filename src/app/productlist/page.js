@@ -11,6 +11,7 @@ export default function FlightSearchPage() {
   const [loading, setLoading] = useState(false);
   const [flightResults, setFlightResults] = useState([]);
   const [selectedAirlines, setSelectedAirlines] = useState([]);
+  const [showModifySearch, setShowModifySearch] = useState(false);
   const [fareTypes, setFareTypes] = useState({
   refundable: false,
   nonRefundable: false,
@@ -317,6 +318,143 @@ const getUniqueAirlines = () => {
 
   </>
 )}
+<button
+  onClick={() => setShowModifySearch(true)}
+  style={{
+    padding: "0.5rem 1rem",
+    backgroundColor: "#f5b000",
+    border: "none",
+    color: "white",
+    borderRadius: "8px",
+    cursor: "pointer",
+    marginBottom: "1rem"
+  }}
+>
+  Modify Search
+</button>
+{showModifySearch && (
+  <div style={{
+    position: "fixed",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000
+  }}>
+    <div style={{
+      background: "white",
+      borderRadius: "10px",
+      padding: "2rem",
+      width: "650px",
+      maxWidth: "95%",
+      position: "relative"
+    }}>
+      <button onClick={() => setShowModifySearch(false)} style={{
+        position: "absolute",
+        top: "10px",
+        right: "10px",
+        background: "transparent",
+        border: "none",
+        fontSize: "1.2rem",
+        cursor: "pointer"
+      }}>✖</button>
+
+      <h3 style={{ background: "#ffc107", padding: "10px", borderRadius: "5px" }}>Modify Search</h3>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", marginTop: "1rem" }}>
+        {/* From Field with suggestions */}
+        <div style={{ flex: "1 1 45%" }}>
+          <label>From</label>
+          <input
+            type="text"
+            value={fromQuery}
+            onChange={(e) => setFromQuery(e.target.value)}
+            style={inputStyle}
+            placeholder="From airport or city"
+          />
+          {fromSuggestions.length > 0 && (
+            <ul style={suggestionListStyle}>
+              {fromSuggestions.map((item) => (
+                <li
+                  key={item.AirportCode + "from-popup"}
+                  style={suggestionItemStyle}
+                  onClick={() => {
+                    setFromQuery(`${item.CityName} (${item.AirportCode})`);
+                    setFromSuggestions([]);
+                  }}
+                >
+                  {item.CityName} - {item.AirportName} ({item.AirportCode})
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* To Field with suggestions */}
+        <div style={{ flex: "1 1 45%" }}>
+          <label>To</label>
+          <input
+            type="text"
+            value={toQuery}
+            onChange={(e) => setToQuery(e.target.value)}
+            style={inputStyle}
+            placeholder="To airport or city"
+          />
+          {toSuggestions.length > 0 && (
+            <ul style={suggestionListStyle}>
+              {toSuggestions.map((item) => (
+                <li
+                  key={item.AirportCode + "to-popup"}
+                  style={suggestionItemStyle}
+                  onClick={() => {
+                    setToQuery(`${item.CityName} (${item.AirportCode})`);
+                    setToSuggestions([]);
+                  }}
+                >
+                  {item.CityName} - {item.AirportName} ({item.AirportCode})
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Date */}
+        <div style={{ flex: "1 1 45%" }}>
+          <label>Departure Date</label>
+          <input
+            type="date"
+            value={departureDate}
+            onChange={(e) => setDepartureDate(e.target.value)}
+            style={inputStyle}
+          />
+        </div>
+
+        {/* Search Button */}
+        <div style={{ flex: "1 1 100%", textAlign: "center", marginTop: "1rem" }}>
+          <button
+            onClick={() => {
+              handleSearch();
+              setShowModifySearch(false);
+            }}
+            style={{
+              padding: "0.75rem 1.5rem",
+              backgroundColor: "#ffc107",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              fontSize: "1rem"
+            }}
+          >
+            Search
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
 
      {flightResults.length > 0 && (
 
