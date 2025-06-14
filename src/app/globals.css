@@ -1,0 +1,71 @@
+.hotel-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.hotel-title {
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.hotel-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.input-group input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.suggestion-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 0.5rem;
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.suggestion-list li {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.suggestion-list li:hover {
+  background-color: #efefef;
+}
+
+.search-btn {
+  padding: 0.75rem;
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.search-btn:hover {
+  background-color: #005dc1;
+}

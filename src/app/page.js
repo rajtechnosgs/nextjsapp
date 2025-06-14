@@ -8,6 +8,9 @@ export default function Home() {
   const navigateToBooking = () => {
     router.push("/productlist");
   };
+   const navigateTohotelBooking = () => {
+    router.push("/hotel");
+  };
 
   return (
     <div className={styles.landing}>
@@ -16,6 +19,9 @@ export default function Home() {
         <p className={styles.subtitle}>Book flights instantly — Fast. Easy. Affordable.</p>
         <button className={styles.button} onClick={navigateToBooking}>
           Start Flight Booking
+        </button>
+        <button className={styles.button} onClick={navigateTohotelBooking}>
+          Start Hotel Booking
         </button>
 
         <div className={styles.features}>
